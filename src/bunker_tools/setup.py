@@ -25,6 +25,7 @@ setup(
     entry_points={
         'console_scripts': [
             'discord_zigzag_test_node = bunker_tools.discord_zigzag_test_node:main',
+            'gps_logger_node = bunker_tools.gps_logger_node:main',
         ],
     },
 )

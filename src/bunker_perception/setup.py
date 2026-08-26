@@ -25,6 +25,7 @@ setup(
     entry_points={
         'console_scripts': [
             'object_detection_node = bunker_perception.object_detection_node:main',
+            'collision_avoidance_node = bunker_perception.collision_avoidance_node:main',
         ],
     },
 )

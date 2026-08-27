@@ -28,6 +28,8 @@ setup(
             'path_generator_node = bunker_navigation.path_generator_node:main',
             'stanlynavigation_node = bunker_navigation.stanlynavigation_node:main',
             'dodging_node = bunker_navigation.dodging_node:main',
+            'cargo_path_perimeter_node = bunker_navigation.cargo_path_perimeter_node:main',
+            'cargohauling_navigation_node = bunker_navigation.cargohauling_navigation_node:main',
         ],
     },
 )

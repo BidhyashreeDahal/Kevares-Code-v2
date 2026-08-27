@@ -7,6 +7,9 @@ from discord.ext import commands
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
+from dotenv import load_dotenv
+
+load_dotenv()
 
 class DiscordMultiModeBotNode(Node):
     def __init__(self):

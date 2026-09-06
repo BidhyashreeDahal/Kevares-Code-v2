@@ -24,6 +24,16 @@ class NavigationAndControlNode(Node):
 
         # === Waypoints and Params ===
         self.declare_parameter('perimeter_dir', '/home/bidya/Kevares-Code-v2/data/perimeter')
+        self.declare_parameter('base_speed', 500)
+        self.declare_parameter('stanley_gain', -0.5)
+        self.declare_parameter('control_period', 0.01)
+        self.declare_parameter('lookahead_dist', 2.0)
+        self.declare_parameter('search_window', 3.0)
+        self.declare_parameter('waypoint_interpolation_samples', 101)
+        self.declare_parameter('final_arrival_radius', 1.0)
+        self.declare_parameter('min_finish_progress_ratio', 0.8)
+        self.declare_parameter('max_steering_units', 288.0)
+        self.declare_parameter('max_steering_angle', 60.0)
         self.perimeter_dir = self.get_parameter('perimeter_dir').get_parameter_value().string_value
         self.perimeter_name = None
         self.waypoints = []
@@ -31,18 +41,26 @@ class NavigationAndControlNode(Node):
         self.current_lat = None
         self.current_lon = None
         self.heading = None
-        self.speed = 500
+        self.speed = self.get_parameter('base_speed').get_parameter_value().integer_value
         self.speed_factor = 1.0
         self.navigation_enabled = False
-        self.k = -0.5
+        self.k = self.get_parameter('stanley_gain').get_parameter_value().double_value
         self.stop_navigation = 1
+        self.lookahead_dist = self.get_parameter('lookahead_dist').get_parameter_value().double_value
+        self.search_window = self.get_parameter('search_window').get_parameter_value().double_value
+        self.waypoint_interpolation_samples = self.get_parameter('waypoint_interpolation_samples').get_parameter_value().integer_value
+        self.final_arrival_radius = self.get_parameter('final_arrival_radius').get_parameter_value().double_value
+        self.min_finish_progress_ratio = self.get_parameter('min_finish_progress_ratio').get_parameter_value().double_value
+        self.max_steering_units = self.get_parameter('max_steering_units').get_parameter_value().double_value
+        self.max_steering_angle = self.get_parameter('max_steering_angle').get_parameter_value().double_value
 
         # === GPS Logger (automatic) ===
         self.actual_gps_points = []   # [(lat, lon)] recorded during navigation
         self.navigation_complete = False
 
         # === Timer ===
-        self.create_timer(0.01, self.navigate)
+        control_period = self.get_parameter('control_period').get_parameter_value().double_value
+        self.create_timer(control_period, self.navigate)
 
     def perimeter_name_callback(self, msg: String):
         self.perimeter_name = msg.data.strip()
@@ -86,7 +104,7 @@ class NavigationAndControlNode(Node):
         for i in range(len(latlon) - 1):
             lat0, lon0 = latlon[i]
             lat1, lon1 = latlon[i + 1]
-            for t in np.linspace(0, 1, 101):
+            for t in np.linspace(0, 1, self.waypoint_interpolation_samples):
                 lati = (1 - t) * lat0 + t * lat1
                 loni = (1 - t) * lon0 + t * lon1
                 interpolated.append((lati, loni))
@@ -108,7 +126,7 @@ class NavigationAndControlNode(Node):
         dy = (lat2 - lat1) * 111000
         return dx, dy
 
-    def stanley_control(self, lat, lon, yaw_rad, v, lookahead_dist=2, search_window=3.0):
+    def stanley_control(self, lat, lon, yaw_rad, v):
         if self.current_waypoint_index >= len(self.waypoints):
             self.stop_navigation = 0
             return 0.0
@@ -121,10 +139,10 @@ class NavigationAndControlNode(Node):
             wp_lat, wp_lon = self.waypoints[i]
             dx, dy = self.latlon_to_xy(lat, lon, wp_lat, wp_lon)
             dist = math.hypot(dx, dy)
-            if dist < min_dist and dist < search_window:
+            if dist < min_dist and dist < self.search_window:
                 min_dist = dist
                 nearest_index = i
-            elif dist > search_window:
+            elif dist > self.search_window:
                 break
         if nearest_index == self.current_waypoint_index:
             min_dist = float('inf')
@@ -144,7 +162,7 @@ class NavigationAndControlNode(Node):
         for j in range(nearest_index + 1, len(self.waypoints)):
             dx, dy = self.latlon_to_xy(*self.waypoints[nearest_index], *self.waypoints[j])
             dist = math.hypot(dx, dy)
-            if dist >= lookahead_dist:
+            if dist >= self.lookahead_dist:
                 lookahead_index = j
                 break
 
@@ -156,7 +174,7 @@ class NavigationAndControlNode(Node):
         cross_track_error = dx_ct * math.sin(path_yaw) - dy_ct * math.cos(path_yaw)
 
         steer_angle = heading_error + math.atan2(self.k * cross_track_error, v)
-        steer_deg = max(-60, min(60, math.degrees(steer_angle)))
+        steer_deg = max(-self.max_steering_angle, min(self.max_steering_angle, math.degrees(steer_angle)))
 
         self.get_logger().info(f"Cross-track error: {cross_track_error:.2f} m, Steering angle: {steer_deg:.2f}°")
 
@@ -185,7 +203,7 @@ class NavigationAndControlNode(Node):
         # Also check if we've passed most of the path to avoid triggering at the start of a loop
         progress_ratio = self.current_waypoint_index / len(self.waypoints)
 
-        if dist_to_final < 1.0 and progress_ratio > 0.8:
+        if dist_to_final < self.final_arrival_radius and progress_ratio > self.min_finish_progress_ratio:
             self.get_logger().info(f"Navigation complete — reached within {dist_to_final:.2f}m of the final waypoint.")
             # Stop the robot
             stop_msg = Int32MultiArray()
@@ -200,10 +218,7 @@ class NavigationAndControlNode(Node):
         self.control_robot(steering_angle)
 
     def control_robot(self, steering_angle):
-        max_steering_units = 576 / 2
-        max_steering_angle = 60.0
-
-        steering = int(max_steering_units * steering_angle / max_steering_angle)
+        steering = int(self.max_steering_units * steering_angle / self.max_steering_angle)
 
         speed = int(self.speed * self.speed_factor)
         msg = Int32MultiArray()

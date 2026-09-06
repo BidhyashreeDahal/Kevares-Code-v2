@@ -64,14 +64,21 @@ class PathGenerator(Node):
         self.get_logger().info("Starting Path Generator Node")
 
         self.declare_parameter('perimeter_dir', '/home/bidya/Kevares-Code-v2/data/perimeter')
+        self.declare_parameter('row_spacing_m', 0.5)
+        self.declare_parameter('row_spacing_multiplier', 3.0)
+        self.declare_parameter('row_spacing_border_m', 0.5)
+        self.declare_parameter('num_border_levels', 2)
         self.perimeter_dir = self.get_parameter('perimeter_dir').get_parameter_value().string_value
 
         self.perimeter_name = None
         self.file_path = None
         self.output_image = None
-        self.row_spacing = 0.5 / 111000 * 3
-        self.row_spacing_border = 0.5 / 111000
-        self.num_border_levels = 2
+        row_spacing_m = self.get_parameter('row_spacing_m').get_parameter_value().double_value
+        row_spacing_multiplier = self.get_parameter('row_spacing_multiplier').get_parameter_value().double_value
+        row_spacing_border_m = self.get_parameter('row_spacing_border_m').get_parameter_value().double_value
+        self.row_spacing = row_spacing_m / 111000 * row_spacing_multiplier
+        self.row_spacing_border = row_spacing_border_m / 111000
+        self.num_border_levels = self.get_parameter('num_border_levels').get_parameter_value().integer_value
 
         self.x_rad = None
 

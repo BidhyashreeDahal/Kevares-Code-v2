@@ -22,7 +22,7 @@ class GPSDataPublisher(Node):
         self.heading_publisher = self.create_publisher(Float64, '/gps_heading', 10)
 
         # Log directory is now a parameter instead of a hardcoded path
-        self.declare_parameter('log_dir', '/home/bidya/Kevares-Code-v2/logs/gps')
+        self.declare_parameter('log_dir', os.path.expanduser('~/Kevares-Code-v2/logs/gps'))
         self.log_dir = self.get_parameter('log_dir').get_parameter_value().string_value
         os.makedirs(self.log_dir, exist_ok=True)
 

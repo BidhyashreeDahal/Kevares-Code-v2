@@ -52,17 +52,17 @@ def generate_launch_description():
         Node(package='bunker_navigation', executable='cargohauling_navigation_node', name='cargohauling_navigation_node',
              output='screen', parameters=[{'path_dir': path_dir}]),
 
-        # === bunker_perception ===
-        Node(package='bunker_perception', executable='object_detection_node', name='object_detection_node', output='screen'),
-
         # === bunker_tools ===
         Node(package='bunker_tools', executable='discord_zigzag_test_node', name='discord_zigzag_test_node',
              output='screen', parameters=[{'perimeter_dir': perimeter_dir}]),
         Node(package='bunker_tools', executable='gps_logger_node', name='gps_logger_node',
              output='screen', parameters=[{'perimeter_dir': perimeter_dir}]),
 
-        # Intentionally NOT included — matches the original launch file, where these
-        # were also commented out / not part of the active LaunchDescription:
+        # Intentionally NOT included:
+        # object_detection_node     — confirmed by Abdeali not currently in use.
+        #                             exp.pt also has an unresolved ultralytics
+        #                             version/fork mismatch (neither 8.2.96 nor
+        #                             8.3.153 can load it) if revisited later.
         # imu_node                  — commented out in the original
         # dodging_node               — commented out in the original
         # collision_avoidance_node  — was never active in the original; also has an

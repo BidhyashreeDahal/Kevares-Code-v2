@@ -18,9 +18,9 @@ class ObjectDetectionNode(Node):
     def __init__(self):
         super().__init__('object_detection_node')
 
-        self.declare_parameter('model_path', '/home/bidya/Kevares-Code-v2/models/exp.pt')
+        self.declare_parameter('model_path', '/home/user/ros2_ws/captured_images/client_handover_20260817-20260817T175838Z-1-001/client_handover_20260817/client_handover_20260817/Model A/exp.pt')
         self.declare_parameter('image_topic', 'color_image')
-        self.declare_parameter('output_csv', '/home/bidya/Kevares-Code-v2/logs/detection_statistics.csv')
+        self.declare_parameter('output_csv', os.path.expanduser('~/Kevares-Code-v2/logs/detection_statistics.csv'))
 
         model_path = self.get_parameter('model_path').value
         image_topic = self.get_parameter('image_topic').value

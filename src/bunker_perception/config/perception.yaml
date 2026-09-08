@@ -1,0 +1,19 @@
+object_detection_node:
+  ros__parameters:
+    model_path: /home/user/bunker_ws/src/bunker_core/bunker_core/models/exp.pt
+    image_topic: color_image
+    output_csv: /home/user/bunker_ws/src/bunker_core/bunker_core/logs/detection_statistics.csv
+    log_every_n_frames: 30
+
+collision_avoidance_node:
+  ros__parameters:
+    min_depth: 0.3
+    max_depth: 2.0
+    max_steering_angle: 0.75
+    min_speed_factor: 0.0
+    emergency_stop_distance: 0.5
+    stop_speed_distance: 0.7
+    slow_speed_distance: 1.6
+    front_min_valid_points: 50
+    side_min_valid_points: 50
+    side_sample_count: 200

@@ -15,14 +15,25 @@ class DiscordMultiModeBotNode(Node):
     def __init__(self):
         super().__init__('discord_multimode_node')
 
+        self.declare_parameter('command_prefix', '!')
+        self.declare_parameter('perimeter_dir', '/home/user/bunker_ws/src/bunker_core/bunker_core/perimeter')
+        self.declare_parameter('response_timeout', 60.0)
+        self.declare_parameter('obstacle_menu_timeout', 120.0)
+        self.declare_parameter('obstacle_record_timeout', 180.0)
+        self.declare_parameter('generation_wait_seconds', 5.0)
+
         intents = discord.Intents.default()
         intents.message_content = True
-        self.bot = commands.Bot(command_prefix="!", intents=intents)
+        command_prefix = self.get_parameter('command_prefix').get_parameter_value().string_value
+        self.bot = commands.Bot(command_prefix=command_prefix, intents=intents)
 
         # === Paths — must match perimeter_dir used by path_perimeter_node,
         # path_generator_node, and stanlynavigation_node in bunker_navigation
-        self.declare_parameter('perimeter_dir', '/home/bidya/Kevares-Code-v2/data/perimeter')
         self.perimeter_dir = self.get_parameter('perimeter_dir').get_parameter_value().string_value
+        self.response_timeout = self.get_parameter('response_timeout').get_parameter_value().double_value
+        self.obstacle_menu_timeout = self.get_parameter('obstacle_menu_timeout').get_parameter_value().double_value
+        self.obstacle_record_timeout = self.get_parameter('obstacle_record_timeout').get_parameter_value().double_value
+        self.generation_wait_seconds = self.get_parameter('generation_wait_seconds').get_parameter_value().double_value
 
         # === State
         self.perimeter_name = None
@@ -117,7 +128,7 @@ class DiscordMultiModeBotNode(Node):
                     return not m.author.bot and m.channel.id == channel.id and m.content.strip().lower() in ("lawn", "cargo")
 
                 try:
-                    resp = await self.bot.wait_for('message', check=check, timeout=60)
+                    resp = await self.bot.wait_for('message', check=check, timeout=self.response_timeout)
                     choice = resp.content.strip().lower()
                     if choice == "lawn":
                         await channel.send("Lawn mowing selected. Use **!drawperimeter** to begin.")
@@ -141,7 +152,7 @@ class DiscordMultiModeBotNode(Node):
 
             def check(m): return m.author == ctx.author and m.channel == ctx.channel
             try:
-                resp = await self.bot.wait_for('message', check=check, timeout=60)
+                resp = await self.bot.wait_for('message', check=check, timeout=self.response_timeout)
                 choice = resp.content.strip().lower()
                 if choice == "lawn":
                     await ctx.send("Lawn mowing selected. Use **!drawperimeter** to begin.")
@@ -160,7 +171,7 @@ class DiscordMultiModeBotNode(Node):
             await ctx.send("Name of perimeter?")
             def check(m): return m.author == ctx.author and m.channel == ctx.channel
             try:
-                resp = await self.bot.wait_for('message', check=check, timeout=60)
+                resp = await self.bot.wait_for('message', check=check, timeout=self.response_timeout)
                 self.perimeter_name = resp.content.strip()
                 self.send_perimeter_name(self.perimeter_name)
                 os.makedirs(os.path.join(self.perimeter_dir, self.perimeter_name), exist_ok=True)
@@ -202,7 +213,7 @@ class DiscordMultiModeBotNode(Node):
                         m.content.strip().lower() in ("record obstacle?", "finish obstacle"))
 
             try:
-                choice_msg = await self.bot.wait_for('message', check=top_check, timeout=120)
+                choice_msg = await self.bot.wait_for('message', check=top_check, timeout=self.obstacle_menu_timeout)
                 choice = choice_msg.content.strip().lower()
 
                 if choice == "record obstacle?":
@@ -212,7 +223,7 @@ class DiscordMultiModeBotNode(Node):
                         return (m.author == ctx.author and m.channel == ctx.channel and m.content.strip().isdigit())
 
                     try:
-                        id_msg = await self.bot.wait_for('message', check=id_check, timeout=60)
+                        id_msg = await self.bot.wait_for('message', check=id_check, timeout=self.response_timeout)
                         oid = id_msg.content.strip()
                         self.send_obstacle_id(oid)
                         await ctx.send(
@@ -227,7 +238,7 @@ class DiscordMultiModeBotNode(Node):
                         recording_open = True
                         while recording_open:
                             try:
-                                rec_msg = await self.bot.wait_for('message', check=rec_check, timeout=180)
+                                rec_msg = await self.bot.wait_for('message', check=rec_check, timeout=self.obstacle_record_timeout)
                                 cmd = rec_msg.content.strip().lower()
                                 if cmd == "start":
                                     self.send_obstacle_cmd("start")
@@ -282,7 +293,7 @@ class DiscordMultiModeBotNode(Node):
                         m.content.strip().lower() in ("without", "with"))
 
             try:
-                resp = await self.bot.wait_for('message', check=check, timeout=60)
+                resp = await self.bot.wait_for('message', check=check, timeout=self.response_timeout)
                 choice = resp.content.strip().lower()
 
                 if choice == "without":
@@ -292,7 +303,7 @@ class DiscordMultiModeBotNode(Node):
                     self.send_path_gen_withobs()
                     await ctx.send("Generating path **with obstacles**...")
 
-                await asyncio.sleep(5)
+                await asyncio.sleep(self.generation_wait_seconds)
 
                 folder = os.path.join(self.perimeter_dir, self.perimeter_name or "")
 
@@ -326,7 +337,7 @@ class DiscordMultiModeBotNode(Node):
         async def generate_path(ctx):
             self.send_path_gen_trigger()
             await ctx.send("Generating zigzag paths (no obstacles)...")
-            await asyncio.sleep(5)
+            await asyncio.sleep(self.generation_wait_seconds)
             folder = os.path.join(self.perimeter_dir, self.perimeter_name or "")
             for f in ["gps_polygon_plot.png", "coverage_paths.png"]:
                 fp = os.path.join(folder, f)
@@ -344,7 +355,7 @@ class DiscordMultiModeBotNode(Node):
                 return
             self.send_path_gen_withobs()
             await ctx.send("Generating zigzag paths **with obstacles**...")
-            await asyncio.sleep(5)
+            await asyncio.sleep(self.generation_wait_seconds)
             folder = os.path.join(self.perimeter_dir, self.perimeter_name or "")
             for f in ["perimeter_with_obstacles.png", "obstacles_plot.png", "coverage_paths_withobs.png", "gps_polygon_plot.png"]:
                 fp = os.path.join(folder, f)
@@ -364,7 +375,7 @@ class DiscordMultiModeBotNode(Node):
             await ctx.send("Which perimeter to navigate?")
             def check(m): return m.author == ctx.author and m.channel == ctx.channel
             try:
-                resp = await self.bot.wait_for('message', check=check, timeout=60)
+                resp = await self.bot.wait_for('message', check=check, timeout=self.response_timeout)
                 chosen = resp.content.strip()
                 if not os.path.exists(os.path.join(self.perimeter_dir, chosen)):
                     await ctx.send("Perimeter not found."); return
@@ -386,7 +397,7 @@ class DiscordMultiModeBotNode(Node):
             await ctx.send("Name for cargo path?")
             def check(m): return m.author == ctx.author and m.channel == ctx.channel
             try:
-                resp = await self.bot.wait_for('message', check=check, timeout=60)
+                resp = await self.bot.wait_for('message', check=check, timeout=self.response_timeout)
                 self.perimeter_name = resp.content.strip()
                 self.send_perimeter_name(self.perimeter_name)
                 os.makedirs(os.path.join(self.perimeter_dir, self.perimeter_name), exist_ok=True)
@@ -412,7 +423,7 @@ class DiscordMultiModeBotNode(Node):
             await ctx.send("Which cargo path to follow?")
             def check(m): return m.author == ctx.author and m.channel == ctx.channel
             try:
-                resp = await self.bot.wait_for('message', check=check, timeout=60)
+                resp = await self.bot.wait_for('message', check=check, timeout=self.response_timeout)
                 chosen = resp.content.strip()
                 if not os.path.exists(os.path.join(self.perimeter_dir, chosen)):
                     await ctx.send("Path not found."); return

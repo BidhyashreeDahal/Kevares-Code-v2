@@ -23,14 +23,23 @@ class GPSDataPublisher(Node):
 
         # Log directory is now a parameter instead of a hardcoded path
         self.declare_parameter('log_dir', os.path.expanduser('~/Kevares-Code-v2/logs/gps'))
+        self.declare_parameter('gps_manufacturer', 'u-blox AG - www.u-blox.com')
+        self.declare_parameter('baudrate', 9600)
+        self.declare_parameter('serial_timeout', 0.001)
+        self.declare_parameter('publish_period', 0.001)
+        self.declare_parameter('frame_id', 'gps_frame')
         self.log_dir = self.get_parameter('log_dir').get_parameter_value().string_value
+        self.gps_manufacturer = self.get_parameter('gps_manufacturer').get_parameter_value().string_value
+        self.baudrate = self.get_parameter('baudrate').get_parameter_value().integer_value
+        self.serial_timeout = self.get_parameter('serial_timeout').get_parameter_value().double_value
+        self.frame_id = self.get_parameter('frame_id').get_parameter_value().string_value
         os.makedirs(self.log_dir, exist_ok=True)
 
         # Set up serial port for u-blox GPS
         ports = serial.tools.list_ports.comports()
         self.port = None
         for port in ports:
-            if port.manufacturer == 'u-blox AG - www.u-blox.com':
+            if port.manufacturer == self.gps_manufacturer:
                 self.port = port.device
                 break
 
@@ -38,13 +47,13 @@ class GPSDataPublisher(Node):
             self.get_logger().error("u-blox GPS device not found.")
             return
 
-        self.baudrate = 9600  # Adjust as per your setup
-        self.ser = serial.Serial(self.port, self.baudrate, timeout=0.001)
+        self.ser = serial.Serial(self.port, self.baudrate, timeout=self.serial_timeout)
 
         self.last_heading = 0.0  # Initialize with a default heading
 
         # Start the timer to publish GPS data at 1Hz (every second)
-        self.timer = self.create_timer(0.001, self.publish_gps_data)
+        publish_period = self.get_parameter('publish_period').get_parameter_value().double_value
+        self.timer = self.create_timer(publish_period, self.publish_gps_data)
 
     def read_nmea_sentence(self):
         line = self.ser.readline().decode('ascii', errors='replace').strip()
@@ -81,7 +90,7 @@ class GPSDataPublisher(Node):
             # Create and populate NavSatFix message
             navsat_msg = NavSatFix()
             navsat_msg.header.stamp = self.get_clock().now().to_msg()
-            navsat_msg.header.frame_id = "gps_frame"  # Replace with your frame ID
+            navsat_msg.header.frame_id = self.frame_id
             navsat_msg.latitude = Latitude
             navsat_msg.longitude = Longitude
 

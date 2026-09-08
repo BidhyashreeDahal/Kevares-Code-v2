@@ -21,10 +21,12 @@ class ObjectDetectionNode(Node):
         self.declare_parameter('model_path', '/home/user/ros2_ws/captured_images/client_handover_20260817-20260817T175838Z-1-001/client_handover_20260817/client_handover_20260817/Model A/exp.pt')
         self.declare_parameter('image_topic', 'color_image')
         self.declare_parameter('output_csv', os.path.expanduser('~/Kevares-Code-v2/logs/detection_statistics.csv'))
+        self.declare_parameter('log_every_n_frames', 30)
 
         model_path = self.get_parameter('model_path').value
         image_topic = self.get_parameter('image_topic').value
         self.output_csv = self.get_parameter('output_csv').value
+        self.log_every_n_frames = self.get_parameter('log_every_n_frames').get_parameter_value().integer_value
 
         if YOLO is None:
             self.get_logger().error("ultralytics library is not installed. Please install it using 'pip install ultralytics'")
@@ -107,7 +109,7 @@ class ObjectDetectionNode(Node):
             writer = csv.writer(file)
             writer.writerow([timestamp, self.frame_count, f"{fps:.2f}", total_detections, str(class_counts)])
 
-        if self.frame_count % 30 == 0:
+        if self.frame_count % self.log_every_n_frames == 0:
             self.get_logger().info(f"Frame {self.frame_count}: FPS: {fps:.1f}, Detections: {total_detections}, Stats: {class_counts}")
 
 def main(args=None):

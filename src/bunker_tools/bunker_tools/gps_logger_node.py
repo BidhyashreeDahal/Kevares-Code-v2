@@ -20,8 +20,12 @@ class GpsLoggerNode(Node):
         super().__init__('gps_logger_node')
 
         # === Config — must match perimeter_dir used across bunker_navigation and bunker_tools ===
-        self.declare_parameter('perimeter_dir', '/home/bidya/Kevares-Code-v2/data/perimeter')
+        self.declare_parameter('perimeter_dir', '/home/user/bunker_ws/src/bunker_core/bunker_core/perimeter')
+        self.declare_parameter('plot_size', 10.0)
+        self.declare_parameter('plot_dpi', 150)
         self.base_dir = self.get_parameter('perimeter_dir').get_parameter_value().string_value
+        self.plot_size = self.get_parameter('plot_size').get_parameter_value().double_value
+        self.plot_dpi = self.get_parameter('plot_dpi').get_parameter_value().integer_value
         self.perimeter_name = None
         self.recording = False
         self.points = []  # [(lat, lon)]
@@ -107,7 +111,7 @@ class GpsLoggerNode(Node):
             self.get_logger().warn("Not enough actual points to plot.")
             return
 
-        fig, ax = plt.subplots(figsize=(10, 10))
+        fig, ax = plt.subplots(figsize=(self.plot_size, self.plot_size))
 
         # Plot planned path
         if planned_pts:
@@ -130,7 +134,7 @@ class GpsLoggerNode(Node):
         ax.set_aspect('equal')
 
         png_path = os.path.join(folder, 'planned_vs_actual.png')
-        fig.savefig(png_path, dpi=150, bbox_inches='tight')
+        fig.savefig(png_path, dpi=self.plot_dpi, bbox_inches='tight')
         plt.close(fig)
         self.get_logger().info(f"Comparison plot saved: {png_path}")
 

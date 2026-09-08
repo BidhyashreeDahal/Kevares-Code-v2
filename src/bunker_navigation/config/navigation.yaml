@@ -1,0 +1,53 @@
+path_perimeter_node:
+  ros__parameters:
+    perimeter_dir: /home/user/bunker_ws/src/bunker_core/bunker_core/perimeter
+
+path_generator_node:
+  ros__parameters:
+    perimeter_dir: /home/user/bunker_ws/src/bunker_core/bunker_core/perimeter
+    row_spacing_m: 0.5
+    row_spacing_multiplier: 3.0
+    row_spacing_border_m: 0.5
+    num_border_levels: 2
+
+stanlynavigation_node:
+  ros__parameters:
+    perimeter_dir: /home/user/bunker_ws/src/bunker_core/bunker_core/perimeter
+    base_speed: 500
+    stanley_gain: -0.5
+    control_period: 0.01
+    lookahead_dist: 2.0
+    search_window: 3.0
+    waypoint_interpolation_samples: 101
+    final_arrival_radius: 1.0
+    min_finish_progress_ratio: 0.8
+    max_steering_units: 288.0
+    max_steering_angle: 60.0
+
+cargo_path_perimeter_node:
+  ros__parameters:
+    perimeter_dir: /home/user/bunker_ws/src/bunker_core/bunker_core/perimeter
+
+cargohauling_navigation_node:
+  ros__parameters:
+    path_dir: /home/user/bunker_ws/src/bunker_core/bunker_core/path
+    base_speed: 500
+    max_steer_units: 576
+    max_steer_deg: 60.0
+    loop_path: true
+    arrival_radius: 0.8
+    lookahead_m: 0.4
+    wheelbase_m: 0.8
+    control_period: 0.02
+
+dodging_node:
+  ros__parameters:
+    arduino_serial_number: 55834323833351A07090
+    serial_baudrate: 9600
+    region_start_fraction: 0.6
+    region_end_fraction: 0.65
+    min_valid_depth: 0.2
+    max_valid_depth: 2.0
+    stop_distance: 0.8
+    slow_distance: 1.5
+    depth_sample_count: 500

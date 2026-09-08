@@ -1,0 +1,14 @@
+discord_zigzag_test_node:
+  ros__parameters:
+    perimeter_dir: /home/user/bunker_ws/src/bunker_core/bunker_core/perimeter
+    command_prefix: '!'
+    response_timeout: 60.0
+    obstacle_menu_timeout: 120.0
+    obstacle_record_timeout: 180.0
+    generation_wait_seconds: 5.0
+
+gps_logger_node:
+  ros__parameters:
+    perimeter_dir: /home/user/bunker_ws/src/bunker_core/bunker_core/perimeter
+    plot_size: 10.0
+    plot_dpi: 150

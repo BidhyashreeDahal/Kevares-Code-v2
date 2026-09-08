@@ -35,7 +35,8 @@ class CargoHaulPathFollower(Node):
         self.create_subscription(String, '/path_name', self.path_name_cb, 10)
 
         # === Files / waypoints ===
-        self.path_dir = "/home/user/bunker_ws/src/bunker_core/bunker_core/path"
+        self.declare_parameter('path_dir', '/home/user/bunker_ws/src/bunker_core/bunker_core/path')
+        self.path_dir = self.get_parameter('path_dir').get_parameter_value().string_value
         self.path_name = None
         self.waypoints = []  # [(lat, lon), ...]
 
@@ -45,21 +46,30 @@ class CargoHaulPathFollower(Node):
         self.heading_deg_north_cw = None  # 0 = North, clockwise +
 
         # === Command scaling ===
-        self.base_speed = 500
+        self.declare_parameter('base_speed', 500)
+        self.declare_parameter('max_steer_units', 576)
+        self.declare_parameter('max_steer_deg', 60.0)
+        self.declare_parameter('loop_path', True)
+        self.declare_parameter('arrival_radius', 0.8)
+        self.declare_parameter('lookahead_m', 0.4)
+        self.declare_parameter('wheelbase_m', 0.8)
+        self.declare_parameter('control_period', 0.02)
+        self.base_speed = self.get_parameter('base_speed').get_parameter_value().integer_value
         self.speed_factor = 1.0
-        self.max_steer_units = 576
-        self.max_steer_deg = 60.0
+        self.max_steer_units = self.get_parameter('max_steer_units').get_parameter_value().integer_value
+        self.max_steer_deg = self.get_parameter('max_steer_deg').get_parameter_value().double_value
 
         # === Segment-follow params (minimal) ===
         self.seg_index = 0            # track segment i -> i+1
-        self.loop_path = True         # wrap from last to first
-        self.arrival_radius = 0.8     # meters to consider segment end reached
-        self.lookahead_m = 0.4        # meters ahead ON the current segment
-        self.wheelbase_m = 0.8        # for pure-pursuit geometry
+        self.loop_path = self.get_parameter('loop_path').get_parameter_value().bool_value
+        self.arrival_radius = self.get_parameter('arrival_radius').get_parameter_value().double_value
+        self.lookahead_m = self.get_parameter('lookahead_m').get_parameter_value().double_value
+        self.wheelbase_m = self.get_parameter('wheelbase_m').get_parameter_value().double_value
         self.started_on_path = False  # snap once at start
 
         self.navigation_enabled = False
-        self.create_timer(0.02, self.navigate)  # 50 Hz
+        control_period = self.get_parameter('control_period').get_parameter_value().double_value
+        self.create_timer(control_period, self.navigate)
 
     # ---------- Subscriptions ----------
     def path_name_cb(self, msg: String):

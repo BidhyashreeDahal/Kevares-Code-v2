@@ -39,17 +39,21 @@ class IMUPublisher(Node):
 
         # Serial connection
         self.declare_parameter('arduino_serial_number', '24333313131351A0A121')
+        self.declare_parameter('baudrate', 115200)
+        self.declare_parameter('publish_period', 0.01)
         self.arduino_serial_number = self.get_parameter('arduino_serial_number').get_parameter_value().string_value
+        self.baudrate = self.get_parameter('baudrate').get_parameter_value().integer_value
         self.arduino_port = self.find_arduino_port(self.arduino_serial_number)
         self.ser = None
 
         if self.arduino_port:
-            self.ser = serial.Serial(self.arduino_port, 115200)
+            self.ser = serial.Serial(self.arduino_port, self.baudrate)
             self.get_logger().info(f"Connected to Arduino on port {self.arduino_port}")
         else:
             self.get_logger().error("Arduino with the specified serial number not found.")
 
-        self.timer = self.create_timer(0.01, self.publish_imu_data)  # 10 Hz
+        publish_period = self.get_parameter('publish_period').get_parameter_value().double_value
+        self.timer = self.create_timer(publish_period, self.publish_imu_data)
         self.buffer = ""  # Buffer to accumulate data
 
     def find_arduino_port(self, serial_number):
@@ -76,7 +80,7 @@ class IMUPublisher(Node):
                     quaternion = parse_quaternion(line)
                     if quaternion:
                         q1, q2, q3, q0 = quaternion
-                        
+
                         # Publish Quaternion
                         msg = Quaternion()
                         msg.x = q1

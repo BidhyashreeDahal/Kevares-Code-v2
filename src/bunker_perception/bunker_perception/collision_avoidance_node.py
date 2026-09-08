@@ -35,10 +35,26 @@ class DodgingNode(Node):
 
         self.get_logger().info("DodgingNode initialized")
 
-        self.min_depth = 0.3
-        self.max_depth = 2.0
-        self.max_steering_angle = 0.75  # radians
-        self.min_speed_factor = 0.0
+        self.declare_parameter('min_depth', 0.3)
+        self.declare_parameter('max_depth', 2.0)
+        self.declare_parameter('max_steering_angle', 0.75)
+        self.declare_parameter('min_speed_factor', 0.0)
+        self.declare_parameter('emergency_stop_distance', 0.5)
+        self.declare_parameter('stop_speed_distance', 0.7)
+        self.declare_parameter('slow_speed_distance', 1.6)
+        self.declare_parameter('front_min_valid_points', 50)
+        self.declare_parameter('side_min_valid_points', 50)
+        self.declare_parameter('side_sample_count', 200)
+        self.min_depth = self.get_parameter('min_depth').get_parameter_value().double_value
+        self.max_depth = self.get_parameter('max_depth').get_parameter_value().double_value
+        self.max_steering_angle = self.get_parameter('max_steering_angle').get_parameter_value().double_value
+        self.min_speed_factor = self.get_parameter('min_speed_factor').get_parameter_value().double_value
+        self.emergency_stop_distance = self.get_parameter('emergency_stop_distance').get_parameter_value().double_value
+        self.stop_speed_distance = self.get_parameter('stop_speed_distance').get_parameter_value().double_value
+        self.slow_speed_distance = self.get_parameter('slow_speed_distance').get_parameter_value().double_value
+        self.front_min_valid_points = self.get_parameter('front_min_valid_points').get_parameter_value().integer_value
+        self.side_min_valid_points = self.get_parameter('side_min_valid_points').get_parameter_value().integer_value
+        self.side_sample_count = self.get_parameter('side_sample_count').get_parameter_value().integer_value
 
     def depth_callback(self, msg):
         try:
@@ -75,12 +91,12 @@ class DodgingNode(Node):
             region = self.depth_frame[h_start:h_end, w_start:w_end]
             valid_mask = (region > self.min_depth) & (region < self.max_depth) & np.isfinite(region)
 
-            if np.count_nonzero(valid_mask) > 50:
+            if np.count_nonzero(valid_mask) > self.front_min_valid_points:
                 y_idxs, x_idxs = np.where(valid_mask)
                 depths = region[y_idxs, x_idxs]
                 min_dist = float(np.min(depths))
 
-                if min_dist < 0.5:
+                if min_dist < self.emergency_stop_distance:
                     # Emergency stop
                     self.publisher.publish(Int32MultiArray(data=[0, 0]))
                     self.get_logger().warn("Emergency stop! Obstacle too close.")
@@ -96,10 +112,10 @@ class DodgingNode(Node):
                     steering_center = offset_norm * self.max_steering_angle * strength
                     steering_center = float(np.clip(steering_center, -self.max_steering_angle, self.max_steering_angle))
 
-                if min_dist < 0.7:
+                if min_dist < self.stop_speed_distance:
                     speed_factor = self.min_speed_factor
-                elif min_dist < 1.6:
-                    speed_factor = max(self.min_speed_factor, (min_dist - 0.3) / (1.6 - 0.3))
+                elif min_dist < self.slow_speed_distance:
+                    speed_factor = max(self.min_speed_factor, (min_dist - self.min_depth) / (self.slow_speed_distance - self.min_depth))
                 else:
                     speed_factor = 1.0
 
@@ -127,10 +143,10 @@ class DodgingNode(Node):
             height, width = frame.shape
             region = frame[int(height * 0.25):int(height * 0.75), int(width * 0.25):int(width * 0.75)]
             valid = (region > self.min_depth) & (region < self.max_depth) & np.isfinite(region)
-            if np.count_nonzero(valid) < 50:
+            if np.count_nonzero(valid) < self.side_min_valid_points:
                 return 0.0
             depths = region[valid]
-            avg_depth = float(np.mean(np.sort(depths.flatten())[:200]))
+            avg_depth = float(np.mean(np.sort(depths.flatten())[:self.side_sample_count]))
             if avg_depth < 1.0:
                 strength = (1.0 - avg_depth) / 1.0
                 return strength * self.max_steering_angle

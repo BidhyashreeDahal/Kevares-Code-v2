@@ -9,15 +9,19 @@ class CanFeedbackNode(Node):
         super().__init__('can_feedback_node')
         # Initialize CAN interface
         self.declare_parameter('can_interface', 'can0')
+        self.declare_parameter('bitrate', 500000)
+        self.declare_parameter('publish_period', 0.01)
         self.can_interface = self.get_parameter('can_interface').get_parameter_value().string_value
+        self.bitrate = self.get_parameter('bitrate').get_parameter_value().integer_value
+        publish_period = self.get_parameter('publish_period').get_parameter_value().double_value
         try:
-            self.bus = can.interface.Bus(self.can_interface, bustype='socketcan', bitrate=500000)
+            self.bus = can.interface.Bus(self.can_interface, bustype='socketcan', bitrate=self.bitrate)
         except OSError as e:
             self.get_logger().error(f"CAN interface {self.can_interface} initialization failed: {e}")
             raise RuntimeError(f"CAN interface {self.can_interface} initialization failed")
 
         self.publisher_ = self.create_publisher(String, 'can_feedback', 10)
-        self.timer = self.create_timer(0.01, self.timer_callback)
+        self.timer = self.create_timer(publish_period, self.timer_callback)
         self.get_logger().info("CAN Feedback node started")
 
     def timer_callback(self):

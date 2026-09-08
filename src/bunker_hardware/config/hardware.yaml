@@ -1,0 +1,56 @@
+gps_node:
+  ros__parameters:
+    log_dir: /home/user/bunker_ws/src/bunker_core/bunker_core/logs/gps
+    gps_manufacturer: u-blox AG - www.u-blox.com
+    baudrate: 9600
+    serial_timeout: 0.001
+    publish_period: 0.001
+    frame_id: gps_frame
+
+IMU_node:
+  ros__parameters:
+    arduino_serial_number: 24333313131351A0A121
+    baudrate: 115200
+    publish_period: 0.01
+
+can_feedback_node:
+  ros__parameters:
+    can_interface: can0
+    bitrate: 500000
+    publish_period: 0.01
+
+robot_controller_node:
+  ros__parameters:
+    can_interface: can0
+    bitrate: 500000
+    can_send_timeout: 0.01
+
+realsense_publisher_node:
+  ros__parameters:
+    camera_serial_number: '938422075744'
+    color_width: 1280
+    color_height: 720
+    depth_width: 1280
+    depth_height: 720
+    fps: 15
+    publish_period: 0.03333333333333333
+
+realsense_left_publisher_node:
+  ros__parameters:
+    camera_serial_number: '244222077232'
+    color_width: 1280
+    color_height: 720
+    depth_width: 1280
+    depth_height: 720
+    fps: 30
+    publish_period: 0.03333333333333333
+
+realsense_right_publisher_node:
+  ros__parameters:
+    camera_serial_number: '242322073736'
+    color_width: 1280
+    color_height: 720
+    depth_width: 1280
+    depth_height: 720
+    fps: 30
+    publish_period: 0.03333333333333333

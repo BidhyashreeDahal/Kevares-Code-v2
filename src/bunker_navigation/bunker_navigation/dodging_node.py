@@ -33,13 +33,29 @@ class DodgingNode(Node):
 
         # === Arduino Serial Setup ===
         self.declare_parameter('arduino_serial_number', '55834323833351A07090')
+        self.declare_parameter('serial_baudrate', 9600)
+        self.declare_parameter('region_start_fraction', 0.6)
+        self.declare_parameter('region_end_fraction', 0.65)
+        self.declare_parameter('min_valid_depth', 0.2)
+        self.declare_parameter('max_valid_depth', 2.0)
+        self.declare_parameter('stop_distance', 0.8)
+        self.declare_parameter('slow_distance', 1.5)
+        self.declare_parameter('depth_sample_count', 500)
         self.arduino_serial_number = self.get_parameter('arduino_serial_number').get_parameter_value().string_value
+        self.serial_baudrate = self.get_parameter('serial_baudrate').get_parameter_value().integer_value
+        self.region_start_fraction = self.get_parameter('region_start_fraction').get_parameter_value().double_value
+        self.region_end_fraction = self.get_parameter('region_end_fraction').get_parameter_value().double_value
+        self.min_valid_depth = self.get_parameter('min_valid_depth').get_parameter_value().double_value
+        self.max_valid_depth = self.get_parameter('max_valid_depth').get_parameter_value().double_value
+        self.stop_distance = self.get_parameter('stop_distance').get_parameter_value().double_value
+        self.slow_distance = self.get_parameter('slow_distance').get_parameter_value().double_value
+        self.depth_sample_count = self.get_parameter('depth_sample_count').get_parameter_value().integer_value
         self.arduino_port = self.find_arduino_port(self.arduino_serial_number)
         self.ser = None
 
         if self.arduino_port:
             try:
-                self.ser = serial.Serial(self.arduino_port, 9600)
+                self.ser = serial.Serial(self.arduino_port, self.serial_baudrate)
                 self.get_logger().info(f"Connected to Arduino on port {self.arduino_port}")
             except serial.SerialException as e:
                 self.get_logger().error(f"Serial connection failed: {e}")
@@ -78,10 +94,9 @@ class DodgingNode(Node):
             depth_image = self.depth_frame
 
         height, width = depth_image.shape
-        region = depth_image[int(height * 0.6):int(height * 0.65), :]
+        region = depth_image[int(height * self.region_start_fraction):int(height * self.region_end_fraction), :]
 
-        # Filter: depth > 0.2 and < 2.0 meters
-        valid_depths = region[(region > 0.2) & (region < 2.0) & np.isfinite(region)]
+        valid_depths = region[(region > self.min_valid_depth) & (region < self.max_valid_depth) & np.isfinite(region)]
 
         if valid_depths.size == 0:
             factor = 1.0
@@ -90,11 +105,11 @@ class DodgingNode(Node):
 
         else:
             sorted_depths = np.sort(valid_depths.flatten())
-            top_depths = sorted_depths[:500] if sorted_depths.size >= 500 else sorted_depths
+            top_depths = sorted_depths[:self.depth_sample_count] if sorted_depths.size >= self.depth_sample_count else sorted_depths
             min_dist = float(np.mean(top_depths))
 
-            high = 1.5
-            low = 0.8
+            high = self.slow_distance
+            low = self.stop_distance
 
             if min_dist < low:
                 factor = 0.0

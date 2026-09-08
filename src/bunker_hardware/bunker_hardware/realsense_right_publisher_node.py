@@ -17,11 +17,22 @@ class RealSensePublisherRight(Node):
         self.config = rs.config()
 
         self.declare_parameter('camera_serial_number', '242322073736')
+        self.declare_parameter('color_width', 1280)
+        self.declare_parameter('color_height', 720)
+        self.declare_parameter('depth_width', 1280)
+        self.declare_parameter('depth_height', 720)
+        self.declare_parameter('fps', 30)
+        self.declare_parameter('publish_period', 1/30)
         serial_number = self.get_parameter('camera_serial_number').get_parameter_value().string_value
+        color_width = self.get_parameter('color_width').get_parameter_value().integer_value
+        color_height = self.get_parameter('color_height').get_parameter_value().integer_value
+        depth_width = self.get_parameter('depth_width').get_parameter_value().integer_value
+        depth_height = self.get_parameter('depth_height').get_parameter_value().integer_value
+        fps = self.get_parameter('fps').get_parameter_value().integer_value
         self.config.enable_device(serial_number)
 
-        self.config.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
-        self.config.enable_stream(rs.stream.depth, 1280, 720, rs.format.z16, 30)
+        self.config.enable_stream(rs.stream.color, color_width, color_height, rs.format.bgr8, fps)
+        self.config.enable_stream(rs.stream.depth, depth_width, depth_height, rs.format.z16, fps)
 
         try:
             self.pipeline.start(self.config)
@@ -34,7 +45,8 @@ class RealSensePublisherRight(Node):
         self.align_to = rs.stream.color
         self.align = rs.align(self.align_to)
 
-        self.timer = self.create_timer(1/30, self.publish_images)
+        publish_period = self.get_parameter('publish_period').get_parameter_value().double_value
+        self.timer = self.create_timer(publish_period, self.publish_images)
 
     def publish_images(self):
         frames = self.pipeline.wait_for_frames()

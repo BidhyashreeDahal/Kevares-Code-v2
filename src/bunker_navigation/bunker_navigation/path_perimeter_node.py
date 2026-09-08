@@ -12,7 +12,7 @@ class PathPerimeterNode(Node):
 
         # === Directory / file state ===
         self.perimeter_name = 'default'
-        self.declare_parameter('perimeter_dir', '/home/bidya/Kevares-Code-v2/data/perimeter')
+        self.declare_parameter('perimeter_dir', '/home/user/bunker_ws/src/bunker_core/bunker_core/perimeter')
         self.perimeter_dir = self.get_parameter('perimeter_dir').get_parameter_value().string_value
         self.file_path = None  # perimeter csv
         self.obstacles_csv_path = None  # obstacles csv

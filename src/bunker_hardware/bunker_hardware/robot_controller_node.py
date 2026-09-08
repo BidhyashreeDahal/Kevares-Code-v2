@@ -17,9 +17,13 @@ class CanCommandSubscriber(Node):
 
         # Initialize CAN bus
         self.declare_parameter('can_interface', 'can0')
+        self.declare_parameter('bitrate', 500000)
+        self.declare_parameter('can_send_timeout', 0.01)
         self.can_interface = self.get_parameter('can_interface').get_parameter_value().string_value
+        self.bitrate = self.get_parameter('bitrate').get_parameter_value().integer_value
+        self.can_send_timeout = self.get_parameter('can_send_timeout').get_parameter_value().double_value
         try:
-            self.bus = can.interface.Bus(bustype='socketcan', channel=self.can_interface, bitrate=500000)
+            self.bus = can.interface.Bus(bustype='socketcan', channel=self.can_interface, bitrate=self.bitrate)
         except OSError as e:
             self.get_logger().error(f"CAN interface {self.can_interface} initialization failed: {e}")
             raise RuntimeError(f"CAN interface {self.can_interface} initialization failed")
@@ -39,7 +43,7 @@ class CanCommandSubscriber(Node):
     def send_movement_command(self, bus, linear_speed, steer):
         data = struct.pack('>hh4x', linear_speed, steer)  # '4x' adds four zero bytes '>h4xh for hunter and >hh4x for bunker pro'
         message = can.Message(arbitration_id=0x111, data=data, is_extended_id=False)
-        bus.send(message, timeout=0.01)
+        bus.send(message, timeout=self.can_send_timeout)
         self.get_logger().info(f'Sent linear {linear_speed} mm/s, steer {steer}')
 
     def destroy_node(self):

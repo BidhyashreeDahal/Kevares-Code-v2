@@ -1,8 +1,8 @@
 object_detection_node:
   ros__parameters:
-    model_path: /home/user/bunker_ws/src/bunker_core/bunker_core/models/exp.pt
+    model_path: /home/user/ros2_ws/captured_images/client_handover_20260817-20260817T175838Z-1-001/client_handover_20260817/client_handover_20260817/Model A/exp.pt
     image_topic: color_image
-    output_csv: /home/user/bunker_ws/src/bunker_core/bunker_core/logs/detection_statistics.csv
+    output_csv: /home/user/Kevares-Code-v2/logs/detection_statistics.csv
     log_every_n_frames: 30
 
 collision_avoidance_node:

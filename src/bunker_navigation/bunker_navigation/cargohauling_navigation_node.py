@@ -35,7 +35,7 @@ class CargoHaulPathFollower(Node):
         self.create_subscription(String, '/path_name', self.path_name_cb, 10)
 
         # === Files / waypoints ===
-        self.declare_parameter('path_dir', '/home/bidya/Kevares-Code-v2/data/perimeter')
+        self.declare_parameter('path_dir', '/home/user/bunker_ws/src/bunker_core/bunker_core/path')
         self.path_dir = self.get_parameter('path_dir').get_parameter_value().string_value
         self.path_name = None
         self.waypoints = []  # [(lat, lon), ...]

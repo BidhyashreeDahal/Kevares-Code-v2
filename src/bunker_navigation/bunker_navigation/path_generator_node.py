@@ -63,7 +63,7 @@ class PathGenerator(Node):
         super().__init__('path_generator_node')
         self.get_logger().info("Starting Path Generator Node")
 
-        self.declare_parameter('perimeter_dir', '/home/bidya/Kevares-Code-v2/data/perimeter')
+        self.declare_parameter('perimeter_dir', '/home/user/bunker_ws/src/bunker_core/bunker_core/perimeter')
         self.declare_parameter('row_spacing_m', 0.5)
         self.declare_parameter('row_spacing_multiplier', 3.0)
         self.declare_parameter('row_spacing_border_m', 0.5)

@@ -18,9 +18,9 @@ class ObjectDetectionNode(Node):
     def __init__(self):
         super().__init__('object_detection_node')
 
-        self.declare_parameter('model_path', '/home/bidya/Kevares-Code-v2/models/exp.pt')
+        self.declare_parameter('model_path', '/home/user/bunker_ws/src/bunker_core/bunker_core/models/exp.pt')
         self.declare_parameter('image_topic', 'color_image')
-        self.declare_parameter('output_csv', '/home/bidya/Kevares-Code-v2/logs/detection_statistics.csv')
+        self.declare_parameter('output_csv', '/home/user/bunker_ws/src/bunker_core/bunker_core/logs/detection_statistics.csv')
         self.declare_parameter('log_every_n_frames', 30)
 
         model_path = self.get_parameter('model_path').value

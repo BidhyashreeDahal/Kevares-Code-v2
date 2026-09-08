@@ -20,7 +20,7 @@ class CargoHaulPathRecorder(Node):
         super().__init__('cargo_haul_path_recorder')
 
         # Where to save — must match perimeter_dir used across bunker_navigation and bunker_tools
-        self.declare_parameter('perimeter_dir', '/home/bidya/Kevares-Code-v2/data/perimeter')
+        self.declare_parameter('perimeter_dir', '/home/user/bunker_ws/src/bunker_core/bunker_core/perimeter')
         self.base_dir = self.get_parameter('perimeter_dir').get_parameter_value().string_value
         self.path_name = "default"
         self.folder = None

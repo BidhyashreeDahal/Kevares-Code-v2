@@ -16,7 +16,7 @@ class DiscordMultiModeBotNode(Node):
         super().__init__('discord_multimode_node')
 
         self.declare_parameter('command_prefix', '!')
-        self.declare_parameter('perimeter_dir', '/home/bidya/Kevares-Code-v2/data/perimeter')
+        self.declare_parameter('perimeter_dir', '/home/user/bunker_ws/src/bunker_core/bunker_core/perimeter')
         self.declare_parameter('response_timeout', 60.0)
         self.declare_parameter('obstacle_menu_timeout', 120.0)
         self.declare_parameter('obstacle_record_timeout', 180.0)

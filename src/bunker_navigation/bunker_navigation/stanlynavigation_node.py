@@ -23,7 +23,7 @@ class NavigationAndControlNode(Node):
         self.create_subscription(String, '/perimeter_name', self.perimeter_name_callback, 10)
 
         # === Waypoints and Params ===
-        self.declare_parameter('perimeter_dir', '/home/bidya/Kevares-Code-v2/data/perimeter')
+        self.declare_parameter('perimeter_dir', '/home/user/bunker_ws/src/bunker_core/bunker_core/perimeter')
         self.declare_parameter('base_speed', 500)
         self.declare_parameter('stanley_gain', -0.5)
         self.declare_parameter('control_period', 0.01)

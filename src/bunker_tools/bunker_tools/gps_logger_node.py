@@ -20,7 +20,7 @@ class GpsLoggerNode(Node):
         super().__init__('gps_logger_node')
 
         # === Config — must match perimeter_dir used across bunker_navigation and bunker_tools ===
-        self.declare_parameter('perimeter_dir', '/home/bidya/Kevares-Code-v2/data/perimeter')
+        self.declare_parameter('perimeter_dir', '/home/user/bunker_ws/src/bunker_core/bunker_core/perimeter')
         self.declare_parameter('plot_size', 10.0)
         self.declare_parameter('plot_dpi', 150)
         self.base_dir = self.get_parameter('perimeter_dir').get_parameter_value().string_value

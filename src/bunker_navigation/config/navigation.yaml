@@ -1,10 +1,10 @@
 path_perimeter_node:
   ros__parameters:
-    perimeter_dir: /home/bidya/Kevares-Code-v2/data/perimeter
+    perimeter_dir: /home/user/bunker_ws/src/bunker_core/bunker_core/perimeter
 
 path_generator_node:
   ros__parameters:
-    perimeter_dir: /home/bidya/Kevares-Code-v2/data/perimeter
+    perimeter_dir: /home/user/bunker_ws/src/bunker_core/bunker_core/perimeter
     row_spacing_m: 0.5
     row_spacing_multiplier: 3.0
     row_spacing_border_m: 0.5
@@ -12,7 +12,7 @@ path_generator_node:
 
 stanlynavigation_node:
   ros__parameters:
-    perimeter_dir: /home/bidya/Kevares-Code-v2/data/perimeter
+    perimeter_dir: /home/user/bunker_ws/src/bunker_core/bunker_core/perimeter
     base_speed: 500
     stanley_gain: -0.5
     control_period: 0.01
@@ -26,11 +26,11 @@ stanlynavigation_node:
 
 cargo_path_perimeter_node:
   ros__parameters:
-    perimeter_dir: /home/bidya/Kevares-Code-v2/data/perimeter
+    perimeter_dir: /home/user/bunker_ws/src/bunker_core/bunker_core/perimeter
 
 cargohauling_navigation_node:
   ros__parameters:
-    path_dir: /home/bidya/Kevares-Code-v2/data/perimeter
+    path_dir: /home/user/bunker_ws/src/bunker_core/bunker_core/path
     base_speed: 500
     max_steer_units: 576
     max_steer_deg: 60.0

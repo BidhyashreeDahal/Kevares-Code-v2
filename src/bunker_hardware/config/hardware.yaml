@@ -1,6 +1,6 @@
 gps_node:
   ros__parameters:
-    log_dir: /home/bidya/Kevares-Code-v2/logs/gps
+    log_dir: /home/user/bunker_ws/src/bunker_core/bunker_core/logs/gps
     gps_manufacturer: u-blox AG - www.u-blox.com
     baudrate: 9600
     serial_timeout: 0.001

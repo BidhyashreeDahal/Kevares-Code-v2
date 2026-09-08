@@ -22,7 +22,7 @@ class GPSDataPublisher(Node):
         self.heading_publisher = self.create_publisher(Float64, '/gps_heading', 10)
 
         # Log directory is now a parameter instead of a hardcoded path
-        self.declare_parameter('log_dir', '/home/bidya/Kevares-Code-v2/logs/gps')
+        self.declare_parameter('log_dir', '/home/user/bunker_ws/src/bunker_core/bunker_core/logs/gps')
         self.declare_parameter('gps_manufacturer', 'u-blox AG - www.u-blox.com')
         self.declare_parameter('baudrate', 9600)
         self.declare_parameter('serial_timeout', 0.001)
